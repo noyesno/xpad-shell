@@ -1,0 +1,36 @@
+#!/bin/bash
+
+#############################################################
+# by: Sean Zhang
+# at: Nov, 2012
+#############################################################
+
+edit=0
+if [ "x$1" = "x-e" ] ; then
+  edit=1
+  shift
+fi
+
+pad=${1:-xpad}
+pad_file=~/.xpad/$pad
+pad_name=${pad_file##*/}
+
+#------------------------------------------------------
+# Edit Pad
+#------------------------------------------------------
+if [ $edit -gt 0 ] ; then
+  $EDITOR $pad_file
+  echo ""
+  echo "Pad [$pad_name] saved ..."
+  exit
+fi
+
+#------------------------------------------------------
+# Display Pad
+#------------------------------------------------------
+nline=`wc -l $pad_file | awk '{print $1}'`
+
+echo "#--xpad:$pad_name--# $nline ~/.xpad/$pad_name"
+echo ""
+tail -16 ~/.xpad/$pad
+
