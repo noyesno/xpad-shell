@@ -5,32 +5,91 @@
 # at: Nov, 2012
 #############################################################
 
-edit=0
+action="view"
 if [ "x$1" = "x-e" ] ; then
-  edit=1
+  action="edit"
   shift
 fi
 
-pad=${1:-xpad}
-pad_file=~/.xpad/$pad
-pad_name=${pad_file##*/}
+if [ "x$1" = "x-c" ] ; then
+  action="copy"
+  shift
+fi
+
+if [ "x$1" = "x-a" ] ; then
+  action="append"
+  shift
+fi
+
+if [ "x$1" = "x-p" ] ; then
+  action="paste"
+  shift
+fi
 
 #------------------------------------------------------
 # Edit Pad
 #------------------------------------------------------
-if [ $edit -gt 0 ] ; then
+function pad_edit {
   $EDITOR $pad_file
   echo ""
   echo "Pad [$pad_name] saved ..."
   exit
-fi
+}
+
+#------------------------------------------------------
+# Copy & Paste
+#------------------------------------------------------
+function pad_append {
+  clipad=~/.xpad/clipad
+  echo "$*" >> $clipad
+  exit
+}
+
+function pad_copy {
+  clipad=~/.xpad/clipad
+  echo $@ > $clipad
+  exit
+}
+
+function pad_paste {
+  clipad=~/.xpad/clipad
+  cat $clipad
+  exit
+}
 
 #------------------------------------------------------
 # Display Pad
 #------------------------------------------------------
-nline=`wc -l $pad_file | awk '{print $1}'`
+function pad_view {
+  nline=`wc -l $pad_file | awk '{print $1}'`
 
-echo "#--xpad:$pad_name--# $nline ~/.xpad/$pad_name"
-echo ""
-tail -16 ~/.xpad/$pad
+  echo "#--xpad:$pad_name--# $nline ~/.xpad/$pad_name"
+  echo ""
+  tail -16 ~/.xpad/$pad
+}
 
+#------------------------------------------------------
+# Dispatch Function
+#------------------------------------------------------
+pad=${1:-xpad}
+pad_file=~/.xpad/$pad
+pad_name=${pad_file##*/}
+
+
+case $action in
+  view)
+    pad_view
+    ;;
+  edit)
+    pad_edit
+    ;;
+  append)
+    pad_append "$*"
+    ;;
+  copy)
+    pad_copy "$*"
+    ;;
+  paste)
+    pad_paste "$*"
+    ;;
+esac
